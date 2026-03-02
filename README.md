@@ -45,7 +45,7 @@ Notes:
 Clone the repository and run the installer:
 
 ```bash
-git clone https://github.com/<your-org>/codex-switch.git
+git clone https://github.com/wweggplant/codex-switch
 cd codex-switch
 ./install.sh
 ```
