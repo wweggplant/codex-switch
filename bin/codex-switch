@@ -174,7 +174,7 @@ cmd_save() {
     if [[ "$yes_flag" -eq 0 ]]; then
         echo -n "Save profile? [Y/n] "
         read -r answer
-        [[ "${answer,,}" != "n" ]] && confirm=1
+        [[ "$(echo "$answer" | tr '[:upper:]' '[:lower:]')" != "n" ]] && confirm=1
     else
         confirm=1
     fi
@@ -349,7 +349,7 @@ cmd_delete() {
     if [[ "$yes_flag" -eq 0 ]]; then
         echo -n "Delete this profile? [y/N] "
         read -r answer
-        [[ "${answer,,}" == "y" ]] && confirm=1
+        [[ "$(echo "$answer" | tr '[:upper:]' '[:lower:]')" == "y" ]] && confirm=1
     else
         confirm=1
     fi
