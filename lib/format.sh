@@ -264,7 +264,8 @@ Usage: codex-switch <command> [options]
 
 Commands:
   save [--label <name>]    Save current auth.json as a profile
-  load [--label <name>]    Load a profile (interactive without --label)
+  use [--label <name>]     Switch to a profile (interactive without --label)
+  load [--label <name>]    Alias of "use" (kept for compatibility)
   list                     List all profiles
   status                   Show current profile status
   sync-openclaw            Sync current Codex auth into OpenClaw
@@ -279,7 +280,7 @@ Options:
 
 Examples:
   codex-switch save --label personal
-  codex-switch load --label work
+  codex-switch use --label work
   codex-switch list
   codex-switch status
   codex-switch sync-openclaw

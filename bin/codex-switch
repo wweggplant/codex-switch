@@ -43,7 +43,7 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            save|load|list|status|delete|sync-openclaw|doctor)
+            save|load|use|list|status|delete|sync-openclaw|doctor)
                 command="$1"
                 shift
                 ;;
@@ -84,7 +84,7 @@ main() {
         save)
             cmd_save "$label"
             ;;
-        load)
+        load|use)
             cmd_load "$label"
             ;;
         list)
@@ -211,7 +211,7 @@ cmd_load() {
 
     # Get label interactively if not provided
     if [[ -z "$label" ]]; then
-        label="$(_cp_select_profile "Select profile to load")"
+        label="$(_cp_select_profile "Select profile to use")"
 
         if [[ -z "$label" ]]; then
             _cp_info "Cancelled"

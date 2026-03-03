@@ -78,8 +78,8 @@ codex-switch save --label work
 Now you can switch between them:
 
 ```bash
-codex-switch load --label personal
-codex-switch load --label work
+codex-switch use --label personal
+codex-switch use --label work
 ```
 
 See what you have stored:
@@ -100,16 +100,19 @@ codex-switch save --label personal
 
 This reads the current `~/.codex/auth.json` and stores it under `~/.codex-switch/profiles/`.
 
-### Load a saved account
+### Use a saved account
 
 ```bash
-codex-switch load
+codex-switch use
+codex-switch use --label work
 codex-switch load --label work
 ```
 
 Before the switch happens, `codex-switch` first syncs the current `~/.codex/auth.json` back into the matching stored profile. That preserves any refresh token rotation that happened while you were using that account.
 
-By design, `load` does not modify OpenClaw. If you want OpenClaw to follow the same account, run `codex-switch sync-openclaw` explicitly after the switch.
+`use` is the recommended command. `load` is kept as a compatible alias.
+
+By design, switching does not modify OpenClaw. If you want OpenClaw to follow the same account, run `codex-switch sync-openclaw` explicitly after the switch.
 
 ### List profiles
 
@@ -190,7 +193,7 @@ When OpenClaw is present, `codex-switch sync-openclaw` updates:
 
 The first file is the primary auth store for current OpenClaw releases. The second is written for compatibility with legacy import flows.
 
-This sync is explicit on purpose. Some people intentionally keep Codex and OpenClaw on different accounts. `codex-switch load` therefore only switches Codex unless you explicitly run `codex-switch sync-openclaw`.
+This sync is explicit on purpose. Some people intentionally keep Codex and OpenClaw on different accounts. `codex-switch use` therefore only switches Codex unless you explicitly run `codex-switch sync-openclaw`.
 
 If you switch accounts while OpenClaw is already running, the files will be updated immediately, but the running gateway may still have old credentials in memory. In that case:
 
@@ -204,7 +207,7 @@ openclaw gateway restart
 The critical behavior is the pre-switch sync:
 
 ```text
-codex-switch load --label work
+codex-switch use --label work
 
 1. Read current ~/.codex/auth.json
 2. Save it back to the matching stored profile
@@ -308,7 +311,7 @@ codex-switch list
 ### Need more debug output
 
 ```bash
-CP_DEBUG=1 codex-switch load --label personal
+CP_DEBUG=1 codex-switch use --label personal
 ```
 
 ## Development

@@ -22,7 +22,7 @@ codex-switch() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            save|load|list|status|delete|sync-openclaw|doctor)
+            save|load|use|list|status|delete|sync-openclaw|doctor)
                 command="$1"
                 shift
                 ;;
@@ -63,7 +63,7 @@ codex-switch() {
         save)
             _cp_cmd_save "$label"
             ;;
-        load)
+        load|use)
             _cp_cmd_load "$label"
             ;;
         list)
@@ -190,7 +190,7 @@ _cp_cmd_load() {
 
     # Get label interactively if not provided
     if [[ -z "$label" ]]; then
-        label="$(_cp_select_profile "Select profile to load")"
+        label="$(_cp_select_profile "Select profile to use")"
 
         if [[ -z "$label" ]]; then
             _cp_info "Cancelled"
@@ -348,6 +348,7 @@ _cp_cmd_delete() {
 
 # Aliases for convenience
 alias codex-switch-load='codex-switch load'
+alias codex-switch-use='codex-switch use'
 alias codex-switch-save='codex-switch save'
 alias codex-switch-list='codex-switch list'
 alias codex-switch-status='codex-switch status'
