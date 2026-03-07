@@ -27,6 +27,10 @@ codex-switch() {
                 shift
                 ;;
             --label|-l)
+                if [[ $# -lt 2 ]]; then
+                    _cp_error "Missing value for $1"
+                    return 1
+                fi
                 label="$2"
                 shift 2
                 ;;
@@ -43,6 +47,16 @@ codex-switch() {
                 return 0
                 ;;
             *)
+                if [[ -n "$command" && -z "$label" ]]; then
+                    case "$command" in
+                        save|load|use|delete)
+                            label="$1"
+                            shift
+                            continue
+                            ;;
+                    esac
+                fi
+
                 if [[ -z "$command" ]]; then
                     _cp_error "Unknown command: $1"
                     _cp_usage

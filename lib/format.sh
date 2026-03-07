@@ -234,16 +234,15 @@ _cp_select_profile() {
         local i=1
         local -a label_array
 
-        echo ""
+        printf "\n" >&2
         while IFS= read -r label; do
             [[ -z "$label" ]] && continue
-            echo "  [$i] $label"
+            printf "  [%s] %s\n" "$i" "$label" >&2
             label_array+=("$label")
             ((i++))
         done < <(echo "$labels")
 
-        echo ""
-        echo -n "Select number: "
+        printf "\nSelect number: " >&2
 
         local selection
         read -r selection
@@ -263,14 +262,14 @@ _cp_usage() {
 Usage: codex-switch <command> [options]
 
 Commands:
-  save [--label <name>]    Save current auth.json as a profile
-  use [--label <name>]     Switch to a profile (interactive without --label)
-  load [--label <name>]    Alias of "use" (kept for compatibility)
+  save [--label <name>|<name>]    Save current auth.json as a profile
+  use [--label <name>|<name>]     Switch to a profile (interactive without a label)
+  load [--label <name>|<name>]    Alias of "use" (kept for compatibility)
   list                     List all profiles
   status                   Show current profile status
   sync-openclaw            Sync current Codex auth into OpenClaw
   doctor                   Show Codex/OpenClaw auth health
-  delete [--label <name>]  Delete a profile (interactive without --label)
+  delete [--label <name>|<name>]  Delete a profile (interactive without a label)
 
 Options:
   --label <name>     Specify profile label (bypasses interactive selection)

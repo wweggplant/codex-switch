@@ -104,13 +104,15 @@ This reads the current `~/.codex/auth.json` and stores it under `~/.codex-switch
 
 ```bash
 codex-switch use
+codex-switch use work
 codex-switch use --label work
+codex-switch load work
 codex-switch load --label work
 ```
 
 Before the switch happens, `codex-switch` first syncs the current `~/.codex/auth.json` back into the matching stored profile. That preserves any refresh token rotation that happened while you were using that account.
 
-`use` is the recommended command. `load` is kept as a compatible alias.
+`use` is the recommended command. `load` is kept as a compatible alias. Both commands accept either `--label work` or the shorter positional form `work`.
 
 By design, switching does not modify OpenClaw. If you want OpenClaw to follow the same account, run `codex-switch sync-openclaw` explicitly after the switch.
 
