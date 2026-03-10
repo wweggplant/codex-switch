@@ -29,7 +29,17 @@ assert_contains() {
 }
 
 make_temp_home() {
-    mktemp -d "${TMPDIR:-/tmp}/codex-switch-test.XXXXXX"
+    local home_dir
+    home_dir="$(mktemp -d "${TMPDIR:-/tmp}/codex-switch-test.XXXXXX")"
+
+    mkdir -p "$home_dir/bin"
+    cat > "$home_dir/bin/pgrep" <<'EOF'
+#!/usr/bin/env bash
+exit 1
+EOF
+    chmod +x "$home_dir/bin/pgrep"
+
+    echo "$home_dir"
 }
 
 write_codex_auth() {
@@ -145,5 +155,37 @@ read_oauth_import_refresh() {
 run_codex_switch() {
     local home_dir="$1"
     shift
-    HOME="$home_dir" CP_DATA_DIR="$home_dir/.codex-switch" CP_NO_COLOR=1 "$BIN" "$@"
+    PATH="$home_dir/bin:$PATH" HOME="$home_dir" CP_DATA_DIR="$home_dir/.codex-switch" CP_NO_COLOR=1 "$BIN" "$@"
+}
+
+write_fake_pgrep_running() {
+    local home_dir="$1"
+
+    mkdir -p "$home_dir/bin"
+    cat > "$home_dir/bin/pgrep" <<'EOF'
+#!/usr/bin/env bash
+if [[ "$1" == "-x" ]] && [[ "$2" == "openclaw-gateway" ]]; then
+    echo "12345"
+    exit 0
+fi
+exit 1
+EOF
+    chmod +x "$home_dir/bin/pgrep"
+}
+
+write_fake_openclaw_cli() {
+    local home_dir="$1"
+    local log_file="${2:-$home_dir/openclaw.log}"
+
+    mkdir -p "$home_dir/bin"
+    cat > "$home_dir/bin/openclaw" <<EOF
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$log_file"
+if [[ "\$1" == "gateway" ]] && [[ "\$2" == "restart" ]]; then
+    echo "Restarted LaunchAgent"
+    exit 0
+fi
+exit 1
+EOF
+    chmod +x "$home_dir/bin/openclaw"
 }

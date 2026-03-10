@@ -19,6 +19,7 @@ codex-switch() {
     local command=""
     local label=""
     local yes_flag=0
+    local restart_gateway=0
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -36,6 +37,10 @@ codex-switch() {
                 ;;
             --yes|-y)
                 yes_flag=1
+                shift
+                ;;
+            --restart-gateway)
+                restart_gateway=1
                 shift
                 ;;
             --debug)
@@ -69,6 +74,11 @@ codex-switch() {
         esac
     done
 
+    if [[ "$restart_gateway" -eq 1 ]] && [[ "$command" != "sync-openclaw" ]]; then
+        _cp_error "--restart-gateway can only be used with sync-openclaw"
+        return 1
+    fi
+
     # Ensure data paths exist
     _cp_ensure_paths
 
@@ -87,7 +97,7 @@ codex-switch() {
             _cp_cmd_status
             ;;
         sync-openclaw)
-            _cp_cmd_sync_openclaw
+            _cp_cmd_sync_openclaw "$restart_gateway"
             ;;
         doctor)
             _cp_cmd_doctor
@@ -238,7 +248,7 @@ _cp_cmd_load() {
 
     # OpenClaw sync is explicit on purpose.
     if _cp_openclaw_is_installed; then
-        _cp_info "OpenClaw was not changed. Run 'codex-switch sync-openclaw' if you want to update OpenClaw too."
+        _cp_info "OpenClaw was not changed. Run 'codex-switch sync-openclaw --restart-gateway' if you want to update OpenClaw too."
     fi
 
     # Get profile info for confirmation
@@ -278,6 +288,8 @@ _cp_cmd_status() {
 
 # Command: sync current Codex auth into OpenClaw stores
 _cp_cmd_sync_openclaw() {
+    local restart_gateway="${1:-0}"
+
     if ! _cp_openclaw_is_installed; then
         _cp_error "OpenClaw is not installed at $(_cp_openclaw_state_dir)"
         return 1
@@ -288,7 +300,23 @@ _cp_cmd_sync_openclaw() {
     fi
 
     _cp_success "OpenClaw auth synced"
-    _cp_info "Restart OpenClaw gateway if it is already running to clear cached OAuth tokens"
+
+    if _cp_openclaw_gateway_running; then
+        if [[ "$restart_gateway" -eq 1 ]]; then
+            if _cp_openclaw_restart_gateway; then
+                _cp_success "OpenClaw gateway restarted"
+            else
+                _cp_warn "Detected a running openclaw-gateway process, but automatic restart failed"
+                _cp_info "Run: openclaw gateway restart"
+            fi
+        else
+            _cp_warn "Detected a running openclaw-gateway process. The new auth will not take effect until the gateway is restarted."
+            _cp_info "Run: openclaw gateway restart"
+        fi
+    elif [[ "$restart_gateway" -eq 1 ]]; then
+        _cp_info "No running openclaw-gateway process detected; restart skipped"
+    fi
+
     echo ""
     _cp_openclaw_format_status
     echo ""

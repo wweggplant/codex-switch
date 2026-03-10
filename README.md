@@ -13,6 +13,7 @@ It exists for one specific problem: Codex OAuth refresh tokens rotate. If you ma
 - Switch profiles by copying, not symlinking
 - Sync freshly rotated tokens back into the saved profile before every switch
 - Sync the active Codex token into OpenClaw's auth store on demand
+- Optionally restart a running OpenClaw gateway after sync so the new auth takes effect immediately
 - Inspect Codex/OpenClaw auth alignment with a doctor command
 
 ## Why copy instead of symlink?
@@ -157,6 +158,7 @@ Example output:
 
 ```bash
 codex-switch sync-openclaw
+codex-switch sync-openclaw --restart-gateway
 ```
 
 Use this when:
@@ -164,6 +166,8 @@ Use this when:
 - you re-authenticated Codex manually
 - OpenClaw still has stale OAuth state
 - you want to sync without switching profiles
+
+Use `--restart-gateway` when the OpenClaw gateway is already running and you want the new auth to take effect immediately.
 
 ### Run doctor
 
@@ -202,6 +206,12 @@ If you switch accounts while OpenClaw is already running, the files will be upda
 ```bash
 codex-switch sync-openclaw
 openclaw gateway restart
+```
+
+Or let `codex-switch` do both:
+
+```bash
+codex-switch sync-openclaw --restart-gateway
 ```
 
 ## How the switch flow works

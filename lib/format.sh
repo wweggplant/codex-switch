@@ -274,6 +274,7 @@ Commands:
 Options:
   --label <name>     Specify profile label (bypasses interactive selection)
   --yes, -y          Skip confirmation prompts
+  --restart-gateway  Restart OpenClaw gateway after sync-openclaw
   --debug            Enable debug output
   --help, -h         Show this help message
 
@@ -283,6 +284,7 @@ Examples:
   codex-switch list
   codex-switch status
   codex-switch sync-openclaw
+  codex-switch sync-openclaw --restart-gateway
   codex-switch doctor
   codex-switch delete --label work
 

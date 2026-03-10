@@ -37,6 +37,23 @@ _cp_openclaw_agent_exists() {
     [[ -d "$(_cp_openclaw_agent_dir)" ]]
 }
 
+_cp_openclaw_gateway_running() {
+    if ! command -v pgrep >/dev/null 2>&1; then
+        return 1
+    fi
+
+    pgrep -x "openclaw-gateway" >/dev/null 2>&1
+}
+
+_cp_openclaw_restart_gateway() {
+    if ! command -v openclaw >/dev/null 2>&1; then
+        _cp_warn "openclaw CLI not found on PATH; cannot restart gateway automatically"
+        return 1
+    fi
+
+    openclaw gateway restart >/dev/null 2>&1
+}
+
 _cp_decode_jwt_exp_ms() {
     local token="$1"
     if [[ -z "$token" ]]; then
