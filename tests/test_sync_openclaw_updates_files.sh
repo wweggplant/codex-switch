@@ -10,10 +10,10 @@ trap 'rm -rf "$home_dir"' EXIT
 write_codex_auth "$home_dir" "account-sync" "sync@example.com" "refresh-sync"
 write_openclaw_store "$home_dir" "openclaw-old-refresh" "old-account"
 
-output="$(run_codex_switch "$home_dir" sync-openclaw)"
+output="$(run_codex_switch "$home_dir" openclaw-use)"
 
-assert_eq "refresh-sync" "$(read_openclaw_refresh "$home_dir")" "sync-openclaw should update OpenClaw auth store"
-assert_eq "refresh-sync" "$(read_oauth_import_refresh "$home_dir")" "sync-openclaw should update oauth import file"
-assert_contains "$output" "OpenClaw auth synced" "sync-openclaw should report success"
+assert_eq "refresh-sync" "$(read_openclaw_refresh "$home_dir")" "openclaw-use should update OpenClaw auth store"
+assert_eq "refresh-sync" "$(read_oauth_import_refresh "$home_dir")" "openclaw-use should update oauth import file"
+assert_contains "$output" "OpenClaw now uses current Codex auth" "openclaw-use should report success"
 
 echo "PASS: test_sync_openclaw_updates_files"

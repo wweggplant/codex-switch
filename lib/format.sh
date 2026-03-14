@@ -267,14 +267,14 @@ Commands:
   load [--label <name>|<name>]    Alias of "use" (kept for compatibility)
   list                     List all profiles
   status                   Show current profile status
-  sync-openclaw            Sync current Codex auth into OpenClaw
+  openclaw-use [--label <name>|<name>] Switch OpenClaw to current Codex auth or a saved profile
   doctor                   Show Codex/OpenClaw auth health
   delete [--label <name>|<name>]  Delete a profile (interactive without a label)
 
 Options:
   --label <name>     Specify profile label (bypasses interactive selection)
   --yes, -y          Skip confirmation prompts
-  --restart-gateway  Restart OpenClaw gateway after sync-openclaw
+  --restart-gateway  Restart OpenClaw gateway after openclaw-use
   --debug            Enable debug output
   --help, -h         Show this help message
 
@@ -283,8 +283,9 @@ Examples:
   codex-switch use --label work
   codex-switch list
   codex-switch status
-  codex-switch sync-openclaw
-  codex-switch sync-openclaw --restart-gateway
+  codex-switch openclaw-use
+  codex-switch openclaw-use work
+  codex-switch openclaw-use --restart-gateway
   codex-switch doctor
   codex-switch delete --label work
 

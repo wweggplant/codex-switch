@@ -118,9 +118,10 @@ write_openclaw_store() {
     local home_dir="$1"
     local refresh_token="$2"
     local account_id="${3:-openclaw-account}"
+    local agent_id="${4:-main}"
 
-    mkdir -p "$home_dir/.openclaw/agents/main/agent"
-    cat > "$home_dir/.openclaw/agents/main/agent/auth-profiles.json" <<EOF
+    mkdir -p "$home_dir/.openclaw/agents/$agent_id/agent"
+    cat > "$home_dir/.openclaw/agents/$agent_id/agent/auth-profiles.json" <<EOF
 {
   "version": 1,
   "profiles": {
@@ -142,9 +143,16 @@ read_codex_refresh() {
     jq -r '.tokens.refresh_token' "$home_dir/.codex/auth.json"
 }
 
+read_profile_refresh() {
+    local data_dir="$1"
+    local account_id="$2"
+    jq -r '.tokens.refresh_token' "$data_dir/profiles/$account_id.json"
+}
+
 read_openclaw_refresh() {
     local home_dir="$1"
-    jq -r '.profiles["openai-codex:default"].refresh' "$home_dir/.openclaw/agents/main/agent/auth-profiles.json"
+    local agent_id="${2:-main}"
+    jq -r '.profiles["openai-codex:default"].refresh' "$home_dir/.openclaw/agents/$agent_id/agent/auth-profiles.json"
 }
 
 read_oauth_import_refresh() {

@@ -4,7 +4,7 @@
 
 It exists for one specific problem: Codex OAuth refresh tokens rotate. If you manage accounts with symlinks or manual file copies, one client can refresh a token and silently invalidate the token another client still holds. The usual failure looks like `refresh_token_reused`.
 
-`codex-switch` keeps each account as a real copy, syncs the currently active token back into its saved profile before switching, and can optionally sync the active token into OpenClaw.
+`codex-switch` keeps each account as a real copy, syncs the currently active token back into its saved profile before switching, and can optionally switch OpenClaw to the same auth.
 
 ## Features
 
@@ -12,9 +12,9 @@ It exists for one specific problem: Codex OAuth refresh tokens rotate. If you ma
 - Save the currently active `~/.codex/auth.json` as a reusable profile
 - Switch profiles by copying, not symlinking
 - Sync freshly rotated tokens back into the saved profile before every switch
-- Sync the active Codex token into OpenClaw's auth store on demand
-- Optionally restart a running OpenClaw gateway after sync so the new auth takes effect immediately
-- Inspect Codex/OpenClaw auth alignment with a doctor command
+- Switch OpenClaw to the active Codex auth or a saved profile on demand
+- Optionally restart a running OpenClaw gateway after `openclaw-use` so the new auth takes effect immediately
+- Inspect the current Codex/OpenClaw relationship with a doctor command
 
 ## Why copy instead of symlink?
 
@@ -34,7 +34,7 @@ If `~/.codex/auth.json` is a symlink to some other file, a refresh can update on
 - `bash` 4+
 - `jq`
 - Optional: `fzf` for interactive selection
-- Optional: OpenClaw, if you want `sync-openclaw` and `doctor` integration
+- Optional: OpenClaw, if you want `openclaw-use` and `doctor` integration
 
 Notes:
 
@@ -115,7 +115,7 @@ Before the switch happens, `codex-switch` first syncs the current `~/.codex/auth
 
 `use` is the recommended command. `load` is kept as a compatible alias. Both commands accept either `--label work` or the shorter positional form `work`.
 
-By design, switching does not modify OpenClaw. If you want OpenClaw to follow the same account, run `codex-switch sync-openclaw` explicitly after the switch.
+By design, switching does not modify OpenClaw. If you want OpenClaw to follow the same account, run `codex-switch openclaw-use` explicitly after the switch.
 
 ### List profiles
 
@@ -154,18 +154,23 @@ Example output:
   OpenClaw oauth import: synced
 ```
 
-### Sync OpenClaw explicitly
+### Switch OpenClaw explicitly
 
 ```bash
-codex-switch sync-openclaw
-codex-switch sync-openclaw --restart-gateway
+codex-switch openclaw-use
+codex-switch openclaw-use work
+codex-switch openclaw-use --restart-gateway
 ```
 
 Use this when:
 
 - you re-authenticated Codex manually
 - OpenClaw still has stale OAuth state
-- you want to sync without switching profiles
+- you want OpenClaw to use a saved account without switching Codex first
+
+If you pass a label, `codex-switch` reads that saved profile directly and writes it into OpenClaw without changing `~/.codex/auth.json`.
+If Codex stays on a different account, `codex-switch doctor` will show which OpenClaw profile is active and report it as `different from current Codex`.
+`sync-openclaw` is kept as a compatibility alias, but `openclaw-use` is the preferred command.
 
 Use `--restart-gateway` when the OpenClaw gateway is already running and you want the new auth to take effect immediately.
 
@@ -175,9 +180,9 @@ Use `--restart-gateway` when the OpenClaw gateway is already running and you wan
 codex-switch doctor
 ```
 
-This prints the current Codex profile and the OpenClaw paths/status that matter:
+This prints the current Codex profile plus the OpenClaw account currently on disk, and whether it matches or differs from the current Codex auth:
 
-- `~/.openclaw/agents/main/agent/auth-profiles.json`
+- `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
 - `~/.openclaw/credentials/oauth.json`
 
 ### Delete a saved profile
@@ -192,26 +197,27 @@ codex-switch delete --label work --yes
 
 OpenClaw support is optional.
 
-When OpenClaw is present, `codex-switch sync-openclaw` updates:
+When OpenClaw is present, `codex-switch openclaw-use` updates:
 
-- `~/.openclaw/agents/main/agent/auth-profiles.json`
+- `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
 - `~/.openclaw/credentials/oauth.json`
 
 The first file is the primary auth store for current OpenClaw releases. The second is written for compatibility with legacy import flows.
 
-This sync is explicit on purpose. Some people intentionally keep Codex and OpenClaw on different accounts. `codex-switch use` therefore only switches Codex unless you explicitly run `codex-switch sync-openclaw`.
+By default it uses the current `~/.codex/auth.json`. If you pass a label, it uses the saved profile for that label instead. This action is explicit on purpose. Some people intentionally keep Codex and OpenClaw on different accounts. `codex-switch use` therefore only switches Codex unless you explicitly run `codex-switch openclaw-use`.
 
 If you switch accounts while OpenClaw is already running, the files will be updated immediately, but the running gateway may still have old credentials in memory. In that case:
 
 ```bash
-codex-switch sync-openclaw
+codex-switch openclaw-use
+codex-switch openclaw-use work
 openclaw gateway restart
 ```
 
 Or let `codex-switch` do both:
 
 ```bash
-codex-switch sync-openclaw --restart-gateway
+codex-switch openclaw-use --restart-gateway
 ```
 
 ## How the switch flow works
@@ -283,6 +289,7 @@ Example `index.json`:
 | `CP_NO_COLOR` | `0` | Disable ANSI colors |
 | `INSTALL_DIR` | `~/.local/bin` | Install destination for `install.sh` |
 | `OPENCLAW_STATE_DIR` | `~/.openclaw` | Override OpenClaw state directory |
+| `OPENCLAW_AGENT_ID` | `main` | Select which OpenClaw agent directory under `agents/<agentId>/agent` to sync |
 | `OPENCLAW_AGENT_DIR` | derived from state dir | Override OpenClaw agent auth directory |
 
 ## Security
@@ -293,7 +300,7 @@ Treat the following as secrets:
 
 - `~/.codex/auth.json`
 - `~/.codex-switch/profiles/*.json`
-- `~/.openclaw/agents/main/agent/auth-profiles.json`
+- `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
 - `~/.openclaw/credentials/oauth.json`
 
 Do not commit them. Do not paste them into issues. Do not share them in screenshots.
@@ -308,11 +315,11 @@ Try:
 
 ```bash
 codex-switch doctor
-codex-switch sync-openclaw
+codex-switch openclaw-use
 openclaw gateway restart
 ```
 
-If the active Codex login itself is wrong, re-authenticate Codex first, then run `codex-switch sync-openclaw` again.
+If the active Codex login itself is wrong, re-authenticate Codex first, then run `codex-switch openclaw-use` again.
 
 ### Profile not found
 

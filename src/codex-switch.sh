@@ -23,7 +23,7 @@ codex-switch() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            save|load|use|list|status|delete|sync-openclaw|doctor)
+            save|load|use|list|status|delete|openclaw-use|sync-openclaw|doctor)
                 command="$1"
                 shift
                 ;;
@@ -54,7 +54,7 @@ codex-switch() {
             *)
                 if [[ -n "$command" && -z "$label" ]]; then
                     case "$command" in
-                        save|load|use|delete)
+                        save|load|use|delete|openclaw-use|sync-openclaw)
                             label="$1"
                             shift
                             continue
@@ -74,8 +74,8 @@ codex-switch() {
         esac
     done
 
-    if [[ "$restart_gateway" -eq 1 ]] && [[ "$command" != "sync-openclaw" ]]; then
-        _cp_error "--restart-gateway can only be used with sync-openclaw"
+    if [[ "$restart_gateway" -eq 1 ]] && [[ "$command" != "openclaw-use" ]] && [[ "$command" != "sync-openclaw" ]]; then
+        _cp_error "--restart-gateway can only be used with openclaw-use"
         return 1
     fi
 
@@ -96,8 +96,8 @@ codex-switch() {
         status)
             _cp_cmd_status
             ;;
-        sync-openclaw)
-            _cp_cmd_sync_openclaw "$restart_gateway"
+        openclaw-use|sync-openclaw)
+            _cp_cmd_openclaw_use "$restart_gateway" "$label" "$command"
             ;;
         doctor)
             _cp_cmd_doctor
@@ -248,7 +248,7 @@ _cp_cmd_load() {
 
     # OpenClaw sync is explicit on purpose.
     if _cp_openclaw_is_installed; then
-        _cp_info "OpenClaw was not changed. Run 'codex-switch sync-openclaw --restart-gateway' if you want to update OpenClaw too."
+        _cp_info "OpenClaw was not changed. Run 'codex-switch openclaw-use --restart-gateway' if you want to update OpenClaw too."
     fi
 
     # Get profile info for confirmation
@@ -286,20 +286,59 @@ _cp_cmd_status() {
     fi
 }
 
-# Command: sync current Codex auth into OpenClaw stores
-_cp_cmd_sync_openclaw() {
+# Command: switch OpenClaw to current Codex auth or a saved profile
+_cp_cmd_openclaw_use() {
     local restart_gateway="${1:-0}"
+    local label="${2:-}"
+    local command_name="${3:-openclaw-use}"
+    local auth_source="current Codex auth"
+
+    if [[ "$command_name" == "sync-openclaw" ]]; then
+        _cp_warn "'sync-openclaw' is kept for compatibility. Prefer 'openclaw-use'."
+    fi
 
     if ! _cp_openclaw_is_installed; then
         _cp_error "OpenClaw is not installed at $(_cp_openclaw_state_dir)"
         return 1
     fi
 
-    if ! _cp_openclaw_sync; then
-        return 1
+    if [[ -n "$label" ]]; then
+        _cp_sync_current
+
+        if ! _cp_has_profiles; then
+            _cp_error "No profiles found. Save a profile first with: codex-switch save"
+            return 1
+        fi
+
+        if ! _cp_profile_exists_by_label "$label"; then
+            _cp_error "Profile not found: $label"
+            _cp_info "Available profiles:"
+            _cp_get_labels | while read -r l; do
+                echo "  - $l"
+            done
+            return 1
+        fi
+
+        local account_id auth_file
+        account_id="$(_cp_get_account_id_by_label "$label")"
+        if [[ -z "$account_id" ]]; then
+            _cp_error "Could not find account_id for label: $label"
+            return 1
+        fi
+
+        auth_file="$(_cp_get_profile_path "$account_id")"
+        if ! _cp_openclaw_sync_from_auth_file "$auth_file"; then
+            return 1
+        fi
+
+        auth_source="profile: $label"
+    else
+        if ! _cp_openclaw_sync; then
+            return 1
+        fi
     fi
 
-    _cp_success "OpenClaw auth synced"
+    _cp_success "OpenClaw now uses $auth_source"
 
     if _cp_openclaw_gateway_running; then
         if [[ "$restart_gateway" -eq 1 ]]; then

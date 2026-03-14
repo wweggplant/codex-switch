@@ -23,6 +23,11 @@ _cp_get_codex_auth_path() {
     echo "$HOME/.codex/auth.json"
 }
 
+_cp_get_profile_path() {
+    local account_id="$1"
+    echo "$CP_DATA_DIR/profiles/$account_id.json"
+}
+
 # Extract account_id from auth.json
 _cp_extract_account_id() {
     local auth_file="$1"
