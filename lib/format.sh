@@ -268,6 +268,7 @@ Commands:
   list                     List all profiles
   status                   Show current profile status
   openclaw-use [--label <name>|<name>] Switch OpenClaw to current Codex auth or a saved profile
+  update                   Download the latest codex-switch into ~/.codex-switch/tmp and reinstall
   doctor                   Show Codex/OpenClaw auth health
   delete [--label <name>|<name>]  Delete a profile (interactive without a label)
 
@@ -286,6 +287,7 @@ Examples:
   codex-switch openclaw-use
   codex-switch openclaw-use work
   codex-switch openclaw-use --restart-gateway
+  codex-switch update
   codex-switch doctor
   codex-switch delete --label work
 

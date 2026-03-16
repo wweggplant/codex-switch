@@ -5,6 +5,7 @@
 
 # Script directory
 CP_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CP_PROJECT_DIR="$CP_SCRIPT_DIR"
 export CP_DATA_DIR="${CP_DATA_DIR:-$HOME/.codex-switch}"
 
 # Source library files
@@ -12,6 +13,7 @@ source "$CP_SCRIPT_DIR/lib/format.sh"
 source "$CP_SCRIPT_DIR/lib/core.sh"
 source "$CP_SCRIPT_DIR/lib/index.sh"
 source "$CP_SCRIPT_DIR/lib/openclaw.sh"
+source "$CP_SCRIPT_DIR/lib/update.sh"
 
 # Main codex-switch function
 codex-switch() {
@@ -23,7 +25,7 @@ codex-switch() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            save|load|use|list|status|delete|openclaw-use|sync-openclaw|doctor)
+            save|load|use|list|status|delete|openclaw-use|sync-openclaw|doctor|update)
                 command="$1"
                 shift
                 ;;
@@ -101,6 +103,9 @@ codex-switch() {
             ;;
         doctor)
             _cp_cmd_doctor
+            ;;
+        update)
+            _cp_cmd_update
             ;;
         delete)
             _cp_cmd_delete "$label" "$yes_flag"

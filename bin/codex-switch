@@ -24,6 +24,7 @@ _CP_RESOLVE_PATH() {
 SCRIPT_PATH="$(_CP_RESOLVE_PATH "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")/../lib" && pwd)"
 LIB_DIR="$SCRIPT_DIR"
+CP_PROJECT_DIR="$(cd "$LIB_DIR/.." && pwd)"
 
 # Data directory
 export CP_DATA_DIR="${CP_DATA_DIR:-$HOME/.codex-switch}"
@@ -33,6 +34,7 @@ source "$LIB_DIR/format.sh"
 source "$LIB_DIR/core.sh"
 source "$LIB_DIR/index.sh"
 source "$LIB_DIR/openclaw.sh"
+source "$LIB_DIR/update.sh"
 
 # Main entry point
 main() {
@@ -44,7 +46,7 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            save|load|use|list|status|delete|openclaw-use|sync-openclaw|doctor)
+            save|load|use|list|status|delete|openclaw-use|sync-openclaw|doctor|update)
                 command="$1"
                 shift
                 ;;
@@ -122,6 +124,9 @@ main() {
             ;;
         doctor)
             cmd_doctor
+            ;;
+        update)
+            _cp_cmd_update
             ;;
         delete)
             cmd_delete "$label" "$yes_flag"

@@ -88,6 +88,7 @@ See what you have stored:
 ```bash
 codex-switch list
 codex-switch status
+codex-switch update
 ```
 
 ## Commands
@@ -185,6 +186,14 @@ This prints the current Codex profile plus the OpenClaw account currently on dis
 
 - `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
 - `~/.openclaw/credentials/oauth.json`
+
+### Update codex-switch
+
+```bash
+codex-switch update
+```
+
+This downloads the latest repo into `~/.codex-switch/tmp/codex-switch` and then runs `install.sh` automatically so your `codex-switch` symlink points at the refreshed managed copy.
 
 ### Delete a saved profile
 
