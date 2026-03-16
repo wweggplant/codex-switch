@@ -159,14 +159,23 @@ _cp_cmd_save() {
         return 1
     fi
 
+    local existing_id=""
+    local existing_email=""
+    local replacing_label=0
+
     # Check if label already exists
     if _cp_profile_exists_by_label "$label"; then
-        local existing_id
         existing_id="$(_cp_get_account_id_by_label "$label")"
 
         if [[ "$existing_id" != "$account_id" ]]; then
-            _cp_error "Label '$label' is already used by another profile"
-            return 1
+            replacing_label=1
+
+            existing_email=$(jq -r ".profiles[\"$existing_id\"].email // empty" "$CP_DATA_DIR/index.json" 2>/dev/null)
+            if [[ -z "$existing_email" ]]; then
+                existing_email="unknown"
+            fi
+
+            _cp_warn "Label '$label' currently points to $existing_email and will be updated to the current login."
         fi
     fi
 
@@ -185,6 +194,10 @@ _cp_cmd_save() {
     if [[ "$confirm" -eq 0 ]]; then
         _cp_info "Cancelled"
         return 0
+    fi
+
+    if [[ "$replacing_label" -eq 1 ]]; then
+        _cp_delete_profile "$existing_id"
     fi
 
     # Copy auth to profile directory

@@ -100,6 +100,7 @@ codex-switch save --label personal
 ```
 
 This reads the current `~/.codex/auth.json` and stores it under `~/.codex-switch/profiles/`.
+If you save with an existing label after re-authenticating, `codex-switch` now rebinds that label to the current login snapshot so the label keeps following your latest auth.
 
 ### Use a saved account
 
